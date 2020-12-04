@@ -1,4 +1,4 @@
-const express = require("express")();
+const app = require("express")();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server, {
   cors: {
@@ -19,17 +19,21 @@ io.on("connection", (socket) => {
     callback({ roomId });
   });
   //when a player join an opened game
-  socket.on("joinGame", ({ friendName, roomId }, callback) => {
+  socket.on("joinGame", ({ friendName, roomId }) => {
     io.to(roomId).emit("joinRequest", { friendName });
-    io.on("requestAccepted", () => {
+    io.on("requestAccepted", (socket, callback) => {
+      console.log(`friend name: ${friendName}`);
       let { game, error } = joinGame({ friendName, roomId });
       if (error) return callback({ error });
-      socket.join(game.roomId);
+      io.join(game.roomId);
       let { hosterName } = game;
       io.to(roomId).emit("GameStarted", { hosterName, friendName, roomId });
+      return callback({
+        message: `${game.hosterName} accepted you on the game`,
+      });
     });
     io.on("requestDenied", (socket, callback) => {
-      callback();
+      callback({ error: "rquest denied" });
     });
   });
 });
@@ -48,6 +52,6 @@ io.on("GameOver", ({ roomId }) => {
   io.to(roomId).emit("GameOverDone");
 });
 
-server.listen("3000", () => {
+server.listen("5000", () => {
   console.log("the server started listening");
 });
