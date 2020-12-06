@@ -7,34 +7,46 @@ const io = require("socket.io")(server, {
   },
 });
 const { emit } = require("process");
-const { startNewGame, joinGame, removeGame } = require("./GameMethods");
+const {
+  startNewGame,
+  joinGame,
+  removeGame,
+  getGame,
+} = require("./GameMethods");
 
 //here i manage the first join of players
 io.on("connection", (socket) => {
   console.log(`${socket.id} has been connected`);
   //when a player start a game
-  socket.on("startNewGame", ({ hosterName }, callback) => {
-    let { roomId } = startNewGame({ hosterName });
+  socket.on("startNewGame", ({ name }, callback) => {
+    let hosterID = socket.id;
+    let { roomId } = startNewGame({ name, hosterID });
     socket.join(roomId);
     callback({ roomId });
   });
   //when a player join an opened game
-  socket.on("joinGame", ({ friendName, roomId }) => {
-    io.to(roomId).emit("joinRequest", { friendName });
-    io.on("requestAccepted", (socket, callback) => {
-      console.log(`friend name: ${friendName}`);
-      let { game, error } = joinGame({ friendName, roomId });
-      if (error) return callback({ error });
-      io.join(game.roomId);
-      let { hosterName } = game;
-      io.to(roomId).emit("GameStarted", { hosterName, friendName, roomId });
-      return callback({
-        message: `${game.hosterName} accepted you on the game`,
+  socket.on("joinGame", ({ name, roomId }, callback) => {
+    console.log(`${name} asked for join [Server]`);
+    if (getGame({ roomId })) {
+      console.log(`${name} want to join game`);
+      socket.on("requestAnswer", ({ isAccepted }) => {
+        console.log("reuest answerd");
+        if (isAccepted) {
+          let { game, error } = joinGame({ name, roomId });
+          if (error) return callback({ error });
+          socket.join(game.roomId);
+          game.friendName = name;
+          let { hosterName, friendName } = game;
+          console.log("the GameSateted has been emited");
+          io.to(roomId).emit("GameStarted", { hosterName, friendName });
+        } else {
+          callback({ error: "the hoster of this game rejected you " });
+        }
       });
-    });
-    io.on("requestDenied", (socket, callback) => {
-      callback({ error: "rquest denied" });
-    });
+      io.to(roomId).emit("joinRequest", { name });
+    } else {
+      callback({ error: "this id is not exist" });
+    }
   });
 });
 //whene a player click a dice i generate a random number and
