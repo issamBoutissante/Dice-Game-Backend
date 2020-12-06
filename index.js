@@ -29,17 +29,22 @@ io.on("connection", (socket) => {
     console.log(`${name} asked for join [Server]`);
     if (getGame({ roomId })) {
       console.log(`${name} want to join game`);
-      socket.on("requestAnswer", ({ isAccepted }) => {
+
+      io.in(roomId).on("requestAnswer", ({ isAccepted }) => {
         console.log("reuest answerd");
         if (isAccepted) {
           let { game, error } = joinGame({ name, roomId });
-          if (error) return callback({ error });
+          if (error) {
+            socket.leave(roomId);
+            return callback({ error });
+          }
           socket.join(game.roomId);
           game.friendName = name;
           let { hosterName, friendName } = game;
           console.log("the GameSateted has been emited");
           io.to(roomId).emit("GameStarted", { hosterName, friendName });
         } else {
+          socket.leave(roomId);
           callback({ error: "the hoster of this game rejected you " });
         }
       });
