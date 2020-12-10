@@ -14,9 +14,8 @@ const onStartNewGame = (socket, io) => {
       if (isAccepted) {
         let { game, error } = joinGame({ name, roomId });
         if (error) {
-          //new Idea
           socket.to(nameId).emit("requestError", { error });
-          //return callback({ error });
+          return;
         }
         game.confirmPassword = Math.random();
         io.to(nameId).emit("requestAccepted", {
