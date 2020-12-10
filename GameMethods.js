@@ -5,6 +5,7 @@ const games = [];
 const startNewGame = ({ name, hosterID }) => {
   let roomId = generator.newId();
   let newGame = {
+    confirmPassword: 1,
     roomId,
     hosterName: name,
     hosterID,
