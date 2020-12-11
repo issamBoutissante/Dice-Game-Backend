@@ -9,6 +9,7 @@ const io = require("socket.io")(server, {
 const { onStartNewGame } = require("./HelperMethods/onStartNewGame");
 const { onJoinGame } = require("./HelperMethods/onJoinGame");
 const { onRollDice } = require("./HelperMethods/onRollDice");
+const { onHoldPoints } = require("./HelperMethods/onHoldPoints");
 //here i manage the first join of players
 io.on("connection", (socket) => {
   console.log(`${socket.id} has been connected`);
@@ -18,23 +19,11 @@ io.on("connection", (socket) => {
   onJoinGame(socket, io);
   //when a player Roll dice
   onRollDice(socket, io);
+  //when a player Hold score points
+  onHoldPoints(socket, io);
 });
 
 //whene a player click a dice i generate a random number and
-//sent it to both players
-io.on("RollDice", ({ roomId }) => {
-  let gessedNum = Math.floor(Math.random() * 6 + 1);
-  io.to(roomId).emit("RollDiceDone", { gessedNum });
-});
-//whene a player hold his point in a score
-io.on("hover", ({ roomId }) => {
-  io.to(roomId).emit("hoverDone");
-});
-
-io.on("GameOver", ({ roomId }) => {
-  io.to(roomId).emit("GameOverDone");
-});
-
 server.listen("5000", () => {
   console.log("the server started listening");
 });
