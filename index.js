@@ -10,17 +10,20 @@ const { onStartNewGame } = require("./HelperMethods/onStartNewGame");
 const { onJoinGame } = require("./HelperMethods/onJoinGame");
 const { onRollDice } = require("./HelperMethods/onRollDice");
 const { onHoldPoints } = require("./HelperMethods/onHoldPoints");
+const { onGameOver } = require("./HelperMethods/onGameOver");
 //here i manage the first join of players
 io.on("connection", (socket) => {
   console.log(`${socket.id} has been connected`);
-  //when a player start a game
+  //whene a player start a game
   onStartNewGame(socket, io);
-  //when a player join an opened game
+  //whene a player join an opened game
   onJoinGame(socket, io);
-  //when a player Roll dice
+  //whene a player Roll dice
   onRollDice(socket, io);
-  //when a player Hold score points
+  //whene a player Hold score points
   onHoldPoints(socket, io);
+  //when game is over
+  onGameOver(socket, io);
 });
 
 //whene a player click a dice i generate a random number and
