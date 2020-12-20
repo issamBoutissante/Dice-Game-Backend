@@ -11,6 +11,8 @@ const { onJoinGame } = require("./HelperMethods/onJoinGame");
 const { onRollDice } = require("./HelperMethods/onRollDice");
 const { onHoldPoints } = require("./HelperMethods/onHoldPoints");
 const { onGameOver } = require("./HelperMethods/onGameOver");
+const { onSendMessage } = require("./HelperMethods/onSendMessage");
+const { onPlayAgain } = require("./HelperMethods/onPlayAgain");
 //here i manage the first join of players
 io.on("connection", (socket) => {
   console.log(`${socket.id} has been connected`);
@@ -22,8 +24,12 @@ io.on("connection", (socket) => {
   onRollDice(socket, io);
   //whene a player Hold score points
   onHoldPoints(socket, io);
-  //when game is over
+  //whene game is over
   onGameOver(socket, io);
+  //this event will run whene a player send new message
+  onSendMessage(socket, io);
+  //this event will restart the game
+  onPlayAgain(socket, io);
 });
 
 //whene a player click a dice i generate a random number and
